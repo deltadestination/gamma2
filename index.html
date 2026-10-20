@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sopa de Letras - Literatura</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .contenedor-principal {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            max-width: 900px;
+            width: 100%;
+            padding: 30px;
+        }
+
+        .encabezado {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .titulo {
+            font-size: 36px;
+            color: #667eea;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .subtitulo {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .info-juego {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .tarjeta-info {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            text-align: center;
+            flex: 1;
+            min-width: 140px;
+        }
+
+        .tarjeta-info label {
+            display: block;
+            font-size: 12px;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+
+        .tarjeta-info .valor {
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .contenedor-juego {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .sopa-container {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .sopa-letras {
+            display: inline-grid;
+            gap: 5px;
+            grid-template-columns: repeat(12, 1fr);
+            padding: 20px;
+            background: #f8f9ff;
+            border-radius: 12px;
+            border: 2px solid #667eea;
+        }
+
+        .celda {
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            color: #667eea;
+            font-size: 16px;
+            user-select: none;
+            transition: all 0.2s ease;
+        }
+
+        .celda:hover {
+            background: #f0f0ff;
+            border-color: #667eea;
+            transform: scale(1.1);
+        }
+
+        .celda.seleccionada {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #764ba2;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .celda.encontrada {
+            background: linear-gradient(135deg, #48d597 0%, #2ba874 100%);
+            color: white;
+            border-color: #2ba874;
+            box-shadow: 0 4px 12px rgba(72, 213, 151, 0.4);
+        }
+
+        .palabras-sidebar {
+            min-width: 220px;
+            background: #f8f9ff;
+            padding: 20px;
+            border-radius: 12px;
+            border: 2px solid #667eea;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .palabras-titulo {
+            font-size: 14px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .palabra-item {
+            padding: 10px 12px;
+            margin-bottom: 8px;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .palabra-item.encontrada {
+            background: linear-gradient(135deg, #48d597 0%, #2ba874 100%);
+            color: white;
+            border-color: #2ba874;
+            text-decoration: line-through;
+            opacity: 0.8;
+        }
+
+        .palabra-item.encontrada::before {
+            content: "✓";
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .controles {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 25px;
+        }
+
+        button {
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primario {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primario:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn-primario:active {
+            transform: translateY(0);
+        }
+
+        .btn-secundario {
+            background: #f0f0ff;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+        .btn-secundario:hover {
+            background: #e0e0ff;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal.activo {
+            display: flex;
+        }
+
+        .modal-contenido {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 400px;
+            animation: aparecerModal 0.3s ease;
+        }
+
+        @keyframes aparecerModal {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .modal-titulo {
+            font-size: 32px;
+            color: #48d597;
+            margin-bottom: 20px;
+        }
+
+        .modal-stats {
+            background: #f8f9ff;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            border: 2px solid #667eea;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            font-size: 16px;
+        }
+
+        .stat-row strong {
+            color: #667eea;
+        }
+
+        @media (max-width: 768px) {
+            .contenedor-principal {
+                padding: 20px;
+            }
+
+            .titulo {
+                font-size: 28px;
+            }
+
+            .contenedor-juego {
+                gap: 15px;
+            }
+
+            .sopa-letras {
+                grid-template-columns: repeat(10, 1fr);
+                gap: 3px;
+                padding: 15px;
+            }
+
+            .celda {
+                width: 30px;
+                height: 30px;
+                font-size: 14px;
+            }
+
+            .palabras-sidebar {
+                min-width: 180px;
+                max-height: 300px;
+            }
+
+            .info-juego {
+                gap: 10px;
+            }
+
+            .tarjeta-info {
+                padding: 10px 15px;
+            }
+
+            .tarjeta-info .valor {
+                font-size: 24px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .contenedor-principal {
+                padding: 15px;
+            }
+
+            .titulo {
+                font-size: 24px;
+            }
+
+            .contenedor-juego {
+                flex-direction: column;
+            }
+
+            .sopa-letras {
+                grid-template-columns: repeat(8, 1fr);
+                gap: 2px;
+                padding: 10px;
+            }
+
+            .celda {
+                width: 28px;
+                height: 28px;
+                font-size: 12px;
+                border-radius: 4px;
+            }
+
+            .palabras-sidebar {
+                min-width: unset;
+                width: 100%;
+                max-height: 250px;
+            }
+
+            .info-juego {
+                flex-direction: column;
+            }
+
+            .tarjeta-info {
+                padding: 12px;
+                min-width: unset;
+            }
+        }
+
+        .animacion-encontrada {
+            animation: pulsoEncontrada 0.5s ease;
+        }
+
+        @keyframes pulsoEncontrada {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .pantalla-oculta {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="contenedor-principal">
+        <div id="pantallaBienvenida" class="encabezado" style="display: flex; flex-direction: column; justify-content: center; min-height: 400px;">
+            <h1 class="titulo">📚 Sopa de Letras - Literatura</h1>
+            <p class="subtitulo" style="margin-bottom: 40px;">¡Bienvenido! Ingresa tu nombre para comenzar</p>
+            
+            <div style="max-width: 400px; margin: 0 auto; width: 100%;">
+                <input type="text" id="inputNombre" placeholder="Escribe tu nombre aquí..." 
+                       style="width: 100%; padding: 15px; font-size: 16px; border: 2px solid white; border-radius: 10px; text-align: center; margin-bottom: 10px; box-sizing: border-box;"
+                       autocomplete="off">
+                <div id="mensajeNombre" style="color: #fff; background: rgba(0,0,0,0.25); border-radius: 8px; padding: 8px; font-size: 14px; margin-bottom: 10px; display: none;"></div>
+                <button class="btn-primario" id="btnContinuar" type="button" style="width: 100%; padding: 15px;">
+                    Continuar
+                </button>
+            </div>
+            
+            <p style="color: rgba(255,255,255,0.8); font-size: 13px; text-align: center; margin-top: 30px;">💡 Tip: Encuentra todas las palabras lo más rápido posible para obtener una mejor puntuación.</p>
+        </div>
+
+        <div id="pantallaJuego" style="display: none; width: 100%;">
+            <div class="encabezado">
+                <h1 class="titulo">📚 Sopa de Letras - Literatura</h1>
+                <p class="subtitulo">¡Encuentra todas las palabras escondidas sobre el maravilloso mundo de la Literatura!</p>
+            </div>
+
+            <div class="info-juego">
+            <div class="tarjeta-info">
+                <label>Encontradas</label>
+                <div class="valor"><span id="encontradas">0</span>/12</div>
+            </div>
+            <div class="tarjeta-info">
+                <label>Tiempo</label>
+                <div class="valor" id="temporizador">00:00</div>
+            </div>
+            <div class="tarjeta-info">
+                <label>Puntuación</label>
+                <div class="valor" id="puntuacion">0</div>
+            </div>
+        </div>
+
+        <div class="contenedor-juego">
+            <div class="sopa-container">
+                <div class="sopa-letras" id="sopaLetras"></div>
+            </div>
+
+            <div class="palabras-sidebar">
+                <div class="palabras-titulo">Palabras a encontrar:</div>
+                <div id="palabrasList"></div>
+            </div>
+        </div>
+
+        <div class="controles">
+            <button class="btn-primario" id="btnNuevoJuego">🔄 Jugar de Nuevo</button>
+            <button class="btn-secundario" id="btnLimpiar">Limpiar Selección</button>
+        </div>
+        </div>
+    </div>
+
+    <div class="modal" id="modalFinJuego">
+        <div class="modal-contenido">
+            <div class="modal-titulo">¡Excelente! 🎉</div>
+            <p id="nombreVictoria" style="font-size: 18px; color: #667eea; font-weight: bold; margin-bottom: 15px;">-</p>
+            <p>Has encontrado todas las palabras</p>
+            <div class="modal-stats">
+                <div class="stat-row">
+                    <strong>Palabras encontradas:</strong>
+                    <span id="palabrasEncontradasFinal">0/12</span>
+                </div>
+                <div class="stat-row">
+                    <strong>Tiempo utilizado:</strong>
+                    <span id="tiempoFinal">00:00</span>
+                </div>
+                <div class="stat-row" style="background: #e8f5e9; border-radius: 6px; padding: 12px; margin-top: 12px; border: none;">
+                    <strong style="color: #2e7d32; font-size: 18px;">Puntuación final:</strong>
+                    <span id="puntuacionFinal" style="color: #2e7d32; font-size: 20px; font-weight: bold;">0</span>
+                </div>
+            </div>
+            <button class="btn-primario" onclick="mostrarPantallaBienvenida()">Jugar de Nuevo</button>
+        </div>
+    </div>
+
+    <script>
+        const PALABRAS = ['LITERATURA', 'POESÍA', 'CUENTO', 'NOVELA', 'TEATRO', 'AUTOR', 'PERSONAJE', 'NARRADOR', 'VERSO', 'RIMA', 'FÁBULA', 'LEYENDA'];
+        const GRID_SIZE = 12;
+        let grid = [];
+        let palabrasEncontradas = new Set();
+        let celdaSSeleccionadas = new Set();
+        let tiempoInicio = 0;
+        let intervaloTiempo = null;
+        let puntuacionTotal = 0;
+        let nombreJugador = '';
+        let audioContext = null;
+
+        function inicializarAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function reproducirSonidoAcierto() {
+            inicializarAudio();
+            const ahora = audioContext.currentTime;
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            
+            osc.connect(gain);
+            gain.connect(audioContext.destination);
+            
+            osc.frequency.setValueAtTime(800, ahora);
+            osc.frequency.setValueAtTime(1000, ahora + 0.1);
+            gain.gain.setValueAtTime(0.3, ahora);
+            gain.gain.exponentialRampToValueAtTime(0.01, ahora + 0.2);
+            
+            osc.start(ahora);
+            osc.stop(ahora + 0.2);
+        }
+
+        function reproducirSonidoVictoria() {
+            inicializarAudio();
+            const ahora = audioContext.currentTime;
+            const notas = [523, 659, 784, 1047];
+            
+            notas.forEach((frecuencia, index) => {
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+                
+                osc.frequency.setValueAtTime(frecuencia, ahora + index * 0.15);
+                gain.gain.setValueAtTime(0.2, ahora + index * 0.15);
+                gain.gain.exponentialRampToValueAtTime(0.01, ahora + index * 0.15 + 0.15);
+                
+                osc.start(ahora + index * 0.15);
+                osc.stop(ahora + index * 0.15 + 0.15);
+            });
+        }
+
+        // Inicializar el juego
+        function inicializarJuego() {
+            grid = [];
+            palabrasEncontradas.clear();
+            celdaSSeleccionadas.clear();
+            puntuacionTotal = 0;
+
+            // Crear grilla vacía
+            for (let i = 0; i < GRID_SIZE; i++) {
+                grid[i] = Array(GRID_SIZE).fill('');
+            }
+
+            // Colocar palabras
+            for (let palabra of PALABRAS) {
+                colocarPalabra(palabra);
+            }
+
+            // Llenar con letras aleatorias
+            const letras = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            for (let i = 0; i < GRID_SIZE; i++) {
+                for (let j = 0; j < GRID_SIZE; j++) {
+                    if (grid[i][j] === '') {
+                        grid[i][j] = letras[Math.floor(Math.random() * letras.length)];
+                    }
+                }
+            }
+
+            renderizarSopa();
+            renderizarPalabras();
+
+            // Iniciar temporizador
+            tiempoInicio = Date.now();
+            clearInterval(intervaloTiempo);
+            intervaloTiempo = setInterval(actualizarTemporizador, 1000);
+            actualizarTemporizador();
+        }
+
+        function colocarPalabra(palabra) {
+            let colocada = false;
+            let intentos = 0;
+
+            while (!colocada && intentos < 50) {
+                const direcciones = [
+                    [0, 1],   // Horizontal
+                    [1, 0],   // Vertical
+                    [1, 1],   // Diagonal \
+                    [1, -1]   // Diagonal /
+                ];
+
+                const dir = direcciones[Math.floor(Math.random() * direcciones.length)];
+                const fila = Math.floor(Math.random() * GRID_SIZE);
+                const col = Math.floor(Math.random() * GRID_SIZE);
+
+                if (puedeColocar(palabra, fila, col, dir)) {
+                    for (let i = 0; i < palabra.length; i++) {
+                        grid[fila + i * dir[0]][col + i * dir[1]] = palabra[i];
+                    }
+                    colocada = true;
+                }
+                intentos++;
+            }
+        }
+
+        function puedeColocar(palabra, fila, col, dir) {
+            if (fila + (palabra.length - 1) * dir[0] >= GRID_SIZE || fila + (palabra.length - 1) * dir[0] < 0) return false;
+            if (col + (palabra.length - 1) * dir[1] >= GRID_SIZE || col + (palabra.length - 1) * dir[1] < 0) return false;
+
+            for (let i = 0; i < palabra.length; i++) {
+                const r = fila + i * dir[0];
+                const c = col + i * dir[1];
+                if (grid[r][c] !== '' && grid[r][c] !== palabra[i]) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        function renderizarSopa() {
+            const sopaDiv = document.getElementById('sopaLetras');
+            sopaDiv.innerHTML = '';
+
+            for (let i = 0; i < GRID_SIZE; i++) {
+                for (let j = 0; j < GRID_SIZE; j++) {
+                    const celda = document.createElement('div');
+                    celda.className = 'celda';
+                    celda.textContent = grid[i][j];
+                    celda.dataset.fila = i;
+                    celda.dataset.col = j;
+                    celda.addEventListener('mousedown', iniciarSeleccion);
+                    celda.addEventListener('mouseover', continuarSeleccion);
+                    celda.addEventListener('touchstart', iniciarSeleccionTouch, { passive: false });
+                    celda.addEventListener('touchmove', continuarSeleccionTouch, { passive: false });
+                    sopaDiv.appendChild(celda);
+                }
+            }
+        }
+
+        function renderizarPalabras() {
+            const lista = document.getElementById('palabrasList');
+            lista.innerHTML = '';
+
+            for (let palabra of PALABRAS) {
+                const item = document.createElement('div');
+                item.className = 'palabra-item';
+                if (palabrasEncontradas.has(palabra)) {
+                    item.classList.add('encontrada');
+                }
+                item.textContent = palabra;
+                lista.appendChild(item);
+            }
+        }
+
+        let mousePresionado = false;
+
+        function iniciarSeleccion(e) {
+            mousePresionado = true;
+            celdaSSeleccionadas.clear();
+            actualizarSeleccion(e);
+        }
+
+        function continuarSeleccion(e) {
+            if (!mousePresionado) return;
+            actualizarSeleccion(e);
+        }
+
+        function actualizarSeleccion(e) {
+            const celdas = document.querySelectorAll('.celda');
+            celdas.forEach(c => c.classList.remove('seleccionada'));
+
+            if (e.target.classList.contains('celda')) {
+                const fila = parseInt(e.target.dataset.fila);
+                const col = parseInt(e.target.dataset.col);
+
+                celdaSSeleccionadas.forEach(id => {
+                    const [f, c] = id.split(',').map(Number);
+                    const celda = document.querySelector(`[data-fila="${f}"][data-col="${c}"]`);
+                    if (celda) celda.classList.add('seleccionada');
+                });
+
+                celdaSSeleccionadas.add(`${fila},${col}`);
+                e.target.classList.add('seleccionada');
+
+                verificarPalabra();
+            }
+        }
+
+        function iniciarSeleccionTouch(e) {
+            e.preventDefault();
+            mousePresionado = true;
+            celdaSSeleccionadas.clear();
+            continuarSeleccionTouch(e);
+        }
+
+        function continuarSeleccionTouch(e) {
+            e.preventDefault();
+            if (!mousePresionado) return;
+
+            const touch = e.touches[0];
+            const elemento = document.elementFromPoint(touch.clientX, touch.clientY);
+            if (elemento && elemento.classList.contains('celda')) {
+                const fila = parseInt(elemento.dataset.fila);
+                const col = parseInt(elemento.dataset.col);
+                celdaSSeleccionadas.add(`${fila},${col}`);
+                renderizarSeleccion();
+                verificarPalabra();
+            }
+        }
+
+        document.addEventListener('mouseup', () => {
+            mousePresionado = false;
+        });
+
+        document.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            mousePresionado = false;
+        });
+
+        function renderizarSeleccion() {
+            document.querySelectorAll('.celda').forEach(c => c.classList.remove('seleccionada'));
+            celdaSSeleccionadas.forEach(id => {
+                const [f, c] = id.split(',').map(Number);
+                const celda = document.querySelector(`[data-fila="${f}"][data-col="${c}"]`);
+                if (celda) celda.classList.add('seleccionada');
+            });
+        }
+
+        function verificarPalabra() {
+            const textSeleccionado = obtenerTextoSeleccionado();
+
+            for (let palabra of PALABRAS) {
+                if (palabrasEncontradas.has(palabra)) continue;
+
+                if (textSeleccionado === palabra || textSeleccionado === palabra.split('').reverse().join('')) {
+                    encontrarPalabra(palabra);
+                }
+            }
+        }
+
+        function obtenerTextoSeleccionado() {
+            const celdas = Array.from(celdaSSeleccionadas).sort().map(id => {
+                const [f, c] = id.split(',').map(Number);
+                return grid[f][c];
+            }).join('');
+
+            return celdas;
+        }
+
+        function encontrarPalabra(palabra) {
+            palabrasEncontradas.add(palabra);
+            puntuacionTotal += palabra.length * 10;
+            reproducirSonidoAcierto();
+
+            // Resaltar celdas encontradas
+            celdaSSeleccionadas.forEach(id => {
+                const [f, c] = id.split(',').map(Number);
+                const celda = document.querySelector(`[data-fila="${f}"][data-col="${c}"]`);
+                if (celda) {
+                    celda.classList.add('encontrada');
+                    celda.classList.add('animacion-encontrada');
+                }
+            });
+
+            celdaSSeleccionadas.clear();
+            actualizarUI();
+
+            if (palabrasEncontradas.size === PALABRAS.length) {
+                finalizarJuego();
+            }
+        }
+
+        function actualizarUI() {
+            document.getElementById('encontradas').textContent = palabrasEncontradas.size;
+            document.getElementById('puntuacion').textContent = puntuacionTotal;
+            renderizarPalabras();
+        }
+
+        function actualizarTemporizador() {
+            const ahora = Date.now();
+            const segundosTranscurridos = Math.floor((ahora - tiempoInicio) / 1000);
+            const minutos = Math.floor(segundosTranscurridos / 60);
+            const segundos = segundosTranscurridos % 60;
+
+            const tiempoFormato = `${String(minutos).padStart(2, '0')}:${String(segundos).padStart(2, '0')}`;
+            document.getElementById('temporizador').textContent = tiempoFormato;
+        }
+
+        function finalizarJuego() {
+            clearInterval(intervaloTiempo);
+            reproducirSonidoVictoria();
+
+            const tiempoTotal = document.getElementById('temporizador').textContent;
+            const bonificacion = calcularBonificacion(tiempoTotal);
+            const puntuacionFinal = puntuacionTotal + bonificacion;
+
+            document.getElementById('nombreVictoria').textContent = `¡Excelente, ${nombreJugador}!`;
+            document.getElementById('palabrasEncontradasFinal').textContent = '12/12';
+            document.getElementById('tiempoFinal').textContent = tiempoTotal;
+            document.getElementById('puntuacionFinal').textContent = puntuacionFinal;
+
+            document.getElementById('modalFinJuego').classList.add('activo');
+        }
+
+        function calcularBonificacion(tiempoStr) {
+            const [minutos, segundos] = tiempoStr.split(':').map(Number);
+            const tiempoTotal = minutos * 60 + segundos;
+            const tiempoMaximo = 300; // 5 minutos
+
+            if (tiempoTotal < tiempoMaximo) {
+                return Math.floor((tiempoMaximo - tiempoTotal) / 10);
+            }
+            return 0;
+        }
+
+        function continuarConNombre() {
+            const input = document.getElementById('inputNombre');
+            const mensaje = document.getElementById('mensajeNombre');
+            const nombre = input.value.trim();
+
+            if (!nombre) {
+                mensaje.textContent = 'Por favor, escribe tu nombre para continuar.';
+                mensaje.style.display = 'block';
+                input.focus();
+                return;
+            }
+
+            mensaje.style.display = 'none';
+            nombreJugador = nombre;
+            document.getElementById('pantallaBienvenida').style.display = 'none';
+            document.getElementById('pantallaJuego').style.display = 'block';
+            inicializarJuego();
+        }
+
+        document.getElementById('btnContinuar').addEventListener('click', continuarConNombre);
+
+        document.getElementById('inputNombre').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') continuarConNombre();
+        });
+
+        function mostrarPantallaBienvenida() {
+            clearInterval(intervaloTiempo);
+            document.getElementById('pantallaJuego').style.display = 'none';
+            document.getElementById('pantallaBienvenida').style.display = 'flex';
+            document.getElementById('modalFinJuego').classList.remove('activo');
+            document.getElementById('inputNombre').value = '';
+            document.getElementById('inputNombre').focus();
+            palabrasEncontradas.clear();
+            celdaSSeleccionadas.clear();
+        }
+
+        document.getElementById('btnNuevoJuego').addEventListener('click', () => {
+            document.getElementById('modalFinJuego').classList.remove('activo');
+            inicializarJuego();
+        });
+
+        document.getElementById('btnLimpiar').addEventListener('click', () => {
+            celdaSSeleccionadas.clear();
+            document.querySelectorAll('.celda').forEach(c => c.classList.remove('seleccionada'));
+        });
+    </script>
+</body>
+</html>
